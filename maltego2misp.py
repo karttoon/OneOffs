@@ -2,7 +2,7 @@
 
 import sys, uuid, datetime
 
-__author__ = "Jeff White [karttoon]"
+__author__ = "Jeff White [karttoon] @noottrak"
 __email__ = "karttoon@gmail.com"
 __version__ = "1.0.1"
 
