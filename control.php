@@ -1,7 +1,7 @@
 <?php
 
 /*
-	Author  - Jeff White [karttoon]
+	Author  - Jeff White [karttoon] @noottrak
 	Email   - karttoon@gmail.com
 	Version - 1.0.0
 	Date    - 02NOV2015
