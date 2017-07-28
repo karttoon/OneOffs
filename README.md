@@ -3,6 +3,9 @@ Small random scripts for various things I find myself needing to repeat/automate
 
 Brief descriptions follow -
 
+bowiefuscator.py
+* Created for one phase of LabyREnth 2017 Docs 5 challenge, it obfuscates PowerShell with the power of David Bowie.
+
 urlquote.py
 * Percent encode/decode strings used in URLs.
 
