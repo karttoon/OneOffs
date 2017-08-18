@@ -23,3 +23,6 @@ pe_meta.py
 
 caretperm.py
 * Takes a string and prints caret injected permutations for Windows CLI obfuscation/evasion.
+
+psorder.py
+* Takes base64 encoded PowerShell and replaces obfuscated ordered string arrays with whatever string they would normally build.
