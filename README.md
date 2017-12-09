@@ -26,3 +26,6 @@ caretperm.py
 
 psorder.py
 * Takes base64 encoded PowerShell and replaces obfuscated ordered string arrays with whatever string they would normally build.
+
+psreplace.py
+* Takes base64 encoded PowerShell and replaces obfuscated char strings to attempt and extract URLs.
