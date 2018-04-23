@@ -29,3 +29,6 @@ psorder.py
 
 psreplace.py
 * Takes base64 encoded PowerShell and replaces obfuscated char strings to attempt and extract URLs.
+
+yararich.py
+* Generate a YARA rule off of embedded Rich Header inside of PE files.
