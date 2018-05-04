@@ -3,8 +3,8 @@ import re, sys, hashlib, binascii, argparse
 
 __author__  = "Jeff White [karttoon] @noottrak"
 __email__   = "karttoon@gmail.com"
-__version__ = "1.0.1"
-__date__    = "24APR2018"
+__version__ = "1.0.2"
+__date__    = "04MAY2018"
 
 def xorDans(value):
     return ''.join(chr(ord(x) ^ ord(y)) for x, y in zip(value, "DanS"))
@@ -47,25 +47,30 @@ import \"pe\""""
     if args.cleardata or args.all:
         print "import \"hash\""
 
-    print """
-rule richheader {
-    meta:
-        comment = \"%s\"
-    condition:""" % (args.file)
+    print "// File: %s" % args.file
+    for rule in yaraRules:
+        print rule.lstrip()
 
-    print "        %s" % ("\n        and ".join(yaraRules))
-    print "}\n"
     return
+
+def formatValue(value, xorKey):
+
+    ruleEntry = ""
+    for count, value in enumerate(value):
+        ruleEntry += "%02X " % (ord(value) ^ ord(xorKey[count]))
+
+    return ruleEntry.strip()
 
 def main():
 
     parser = argparse.ArgumentParser(description="Generate a YARA rule from Rich Header information found in PE.")
-    parser.add_argument("-x", "--xorkey", help="Add XOR Key to YARA rule", action="store_true")
-    parser.add_argument("-t", "--toolid", help="Add Tool ID to YARA rule", action="store_true")
-    parser.add_argument("-c", "--cleardata", help="Add XOR'd clear data to YARA rule", action="store_true")
+    parser.add_argument("-x", "--xorkey", help="Print XOR Key to YARA rule", action="store_true")
+    parser.add_argument("-t", "--toolid", help="Print Tool ID to YARA rule", action="store_true")
+    parser.add_argument("-c", "--cleardata", help="Print XOR'd clear data to YARA rule", action="store_true")
     parser.add_argument("-a", "--all", help="Add all fields to YARA rule (overkill)", action="store_true")
     parser.add_argument("-d", "--details", help="Print details from parsing Rich Header", action="store_true")
     parser.add_argument("-f", "--file", help="Specify file to parse", metavar="<filename>", required=True)
+    parser.add_argument("-o", "--ordered", help="Add Encoded Toold ID to YARA rule", action="store_true")
     args = parser.parse_args()
 
     if not args.xorkey and not args.toolid and not args.cleardata and not args.all:
@@ -109,6 +114,16 @@ def main():
     secondSum = 0
 
     # Determine ID Key, Value, and Usage for each entry
+    unorRule = """
+rule UNORDERED_ARRAY {
+    condition:    
+"""
+
+    ordrRule = """
+rule ORDERED_XOR {
+    strings:    
+"""
+
     for i in range(0,len(decData),8):
 
         value = decData[i:i+8]
@@ -129,11 +144,29 @@ def main():
                                                             idValue,
                                                             usesValue)
         if args.toolid or args.all:
-            yaraRules.append("pe.rich_signature.toolid(%s,%s)" % (idKey, idValue))
+            if counter != 1:
+                unorRule += "%sand pe.rich_signature.toolid(%s,%s)\n" % (" " * 8, idKey, idValue)
+            else:
+                unorRule += "%spe.rich_signature.toolid(%s,%s)\n" % (" " * 8, idKey, idValue)
+
+        if args.ordered or args.all:
+            ruleEntry = formatValue(value[:4], xorKey)
+            ordrRule += "%s$entry%s = { %s }\n" % (" " * 8, counter, ruleEntry)
 
         counter += 1
 
-    finalSum = binascii.unhexlify(hex((firstSum + secondSum) & 0xFFFFFFFF)[2:])
+    if args.toolid or args.all:
+        yaraRules.append(unorRule + "}")
+    if args.ordered or args.all:
+        ordrRule += "%scondition:\n" % (" " * 4)
+        for entry in range(1, counter - 1): # Restrict condition to available entries
+            if entry != counter - 2:
+                ordrRule += "%s@entry%s[1] < @entry%s[1]\n%sand\n" % (" " * 8, entry, entry + 1, " " * 8)
+            else:
+                ordrRule += "%s@entry%s[1] < @entry%s[1]\n" % (" " * 8, entry, entry + 1)
+        yaraRules.append(ordrRule + "}")
+
+    finalSum = binascii.unhexlify("%08X" % ((firstSum + secondSum) & 0xFFFFFFFF))
     sumMatch = True
 
     if finalSum != xorKey[::-1]:
@@ -142,9 +175,17 @@ def main():
         print binascii.hexlify(finalSum), binascii.hexlify(xorKey)
 
     if args.xorkey or args.all:
-        yaraRules.append("pe.rich_signature.key == 0x%s" % (binascii.hexlify(xorKey[::-1])))
+        yaraRules.append("""
+rule XOR_KEY {
+    condition:
+        pe.rich_signature.key == 0x%s
+}""" % (binascii.hexlify(xorKey[::-1])))
     if args.cleardata or args.all:
-        yaraRules.append("hash.sha256(pe.rich_signature.clear_data) == \"%s\"" % (hashlib.sha256(clearData).hexdigest()))
+        yaraRules.append("""
+rule CLEAR_DATA {
+    condition:
+        hash.sha256(pe.rich_signature.clear_data) == \"%s\"
+}""" % (hashlib.sha256(clearData).hexdigest())) # Must be lowercase
 
     if args.details:
         print "\n[+] Details\n"
@@ -154,7 +195,7 @@ def main():
         print "XOR Key:         0x%s" % (binascii.hexlify(xorKey[::-1]).upper())
         print "Checksum Match:  %s\n" % sumMatch
 
-    if (args.xorkey or args.toolid or args.cleardata or args.all) and not args.details:
+    if args.xorkey or args.toolid or args.cleardata or args.all:
         genYara(args, yaraRules)
 
     return
