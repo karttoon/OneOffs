@@ -172,14 +172,14 @@ rule ORDERED_XOR {
     if finalSum != xorKey[::-1]:
         sumMatch = False
         print "Extracted XOR Key differs from Generated XOR Key!"
-        print binascii.hexlify(finalSum), binascii.hexlify(xorKey)
+        print "Current: %s | Expected: %s" % (binascii.hexlify(finalSum), binascii.hexlify(xorKey))
 
     if args.xorkey or args.all:
         yaraRules.append("""
 rule XOR_KEY {
     condition:
         pe.rich_signature.key == 0x%s
-}""" % (binascii.hexlify(xorKey[::-1])))
+}""" % (binascii.hexlify(xorKey[::-1])).upper())
     if args.cleardata or args.all:
         yaraRules.append("""
 rule CLEAR_DATA {
