@@ -32,3 +32,6 @@ psreplace.py
 
 yararich.py
 * Generate a YARA rule off of embedded Rich Header inside of PE files.
+
+ole_pkgscrape.py
+* Extracts all embedded OLE Packages from Microsoft Office 97-2003 documents (oletools also accomplishes this).
