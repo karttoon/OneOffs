@@ -3,8 +3,8 @@ import re, sys, hashlib, binascii, argparse
 
 __author__  = "Jeff White [karttoon] @noottrak"
 __email__   = "karttoon@gmail.com"
-__version__ = "1.0.2"
-__date__    = "04MAY2018"
+__version__ = "1.0.3"
+__date__    = "15AUG2018"
 
 def xorDans(value):
     return ''.join(chr(ord(x) ^ ord(y)) for x, y in zip(value, "DanS"))
@@ -93,9 +93,9 @@ def main():
         if richStart < richEnd:
             rhData = content[richStart:richEnd]
         else:
-            raise
+            raise Exception("Start anchor found after End anchor - should not occur.")
     except:
-        print "Unable to find Rich Header structure in file %s" % (sys.argv[1])
+        print "Unable to find Rich Header structure in file %s" % (args.file)
         sys.exit(1)
 
     firstSum = genFirst(content, richStart)
