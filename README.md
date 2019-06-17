@@ -3,6 +3,9 @@ Small random scripts for various things I find myself needing to repeat/automate
 
 Brief descriptions follow -
 
+youtube_maltego.py
+* Extracts comments from YouTube videos for overlap analysis. Can comment out a field to print to CLI instead of Maltego if node limit reached.
+
 bowiefuscator.py
 * Created for one phase of LabyREnth 2017 Docs 5 challenge, it obfuscates PowerShell with the power of David Bowie.
 
