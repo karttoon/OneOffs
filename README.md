@@ -38,3 +38,6 @@ yararich.py
 
 ole_pkgscrape.py
 * Extracts all embedded OLE Packages from Microsoft Office 97-2003 documents (oletools also accomplishes this).
+
+daily_notes.py
+* Generates a daily note file template that Netspooky created.
